@@ -9,6 +9,10 @@ import {
     Trash2,
     Plus,
     MousePointer,
+    Clock,
+    Zap,
+    BookOpen,
+    Target,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -24,14 +28,81 @@ interface Edge {
     from: number;
     to: number;
     weight: number;
+    state?: 'default' | 'exploring' | 'path';
 }
 
 type Algorithm = 'bfs' | 'dfs' | 'dijkstra';
 
-const algorithms: { id: Algorithm; name: string; description: string }[] = [
-    { id: 'bfs', name: 'Breadth-First Search', description: 'Level-by-level traversal' },
-    { id: 'dfs', name: 'Depth-First Search', description: 'Deep exploration first' },
-    { id: 'dijkstra', name: "Dijkstra's Algorithm", description: 'Shortest path (weighted)' },
+interface AlgorithmInfo {
+    id: Algorithm;
+    name: string;
+    description: string;
+    timeComplexity: string;
+    spaceComplexity: string;
+    useCase: string;
+    color: string;
+    pseudocode: string[];
+}
+
+const algorithms: AlgorithmInfo[] = [
+    {
+        id: 'bfs',
+        name: 'Breadth-First Search',
+        description: 'Explores neighbors level by level using a queue. Guarantees shortest path in unweighted graphs.',
+        timeComplexity: 'O(V + E)',
+        spaceComplexity: 'O(V)',
+        useCase: 'Shortest path (unweighted), level-order traversal',
+        color: 'from-blue-500 to-cyan-500',
+        pseudocode: [
+            'queue ← [start]',
+            'visited ← {start}',
+            'while queue not empty:',
+            '  current ← dequeue()',
+            '  if current == target: ✓',
+            '  for neighbor in adj[current]:',
+            '    if neighbor not visited:',
+            '      enqueue(neighbor)',
+            '      visited.add(neighbor)',
+        ],
+    },
+    {
+        id: 'dfs',
+        name: 'Depth-First Search',
+        description: 'Explores as deep as possible before backtracking using recursion/stack.',
+        timeComplexity: 'O(V + E)',
+        spaceComplexity: 'O(V)',
+        useCase: 'Cycle detection, topological sort, maze solving',
+        color: 'from-purple-500 to-pink-500',
+        pseudocode: [
+            'function DFS(node):',
+            '  if node == target: ✓',
+            '  visited.add(node)',
+            '  for neighbor in adj[node]:',
+            '    if neighbor not visited:',
+            '      DFS(neighbor)',
+            '  // backtrack',
+        ],
+    },
+    {
+        id: 'dijkstra',
+        name: "Dijkstra's Algorithm",
+        description: 'Finds shortest path in weighted graphs using a priority queue.',
+        timeComplexity: 'O((V + E) log V)',
+        spaceComplexity: 'O(V)',
+        useCase: 'GPS navigation, network routing, weighted shortest path',
+        color: 'from-amber-500 to-orange-500',
+        pseudocode: [
+            'dist[start] ← 0',
+            'pq ← [(0, start)]',
+            'while pq not empty:',
+            '  (d, u) ← extract_min()',
+            '  if u == target: ✓',
+            '  for (v, weight) in adj[u]:',
+            '    if dist[u]+weight < dist[v]:',
+            '      dist[v] ← dist[u]+weight',
+            '      pq.insert((dist[v], v))',
+        ],
+    },
 ];
 
 const SPEEDS = [
@@ -53,17 +124,21 @@ export function GraphPage() {
     const [endNode, setEndNode] = useState<number | null>(null);
     const [visitedCount, setVisitedCount] = useState(0);
     const [message, setMessage] = useState('');
+    const [currentStep, setCurrentStep] = useState(-1);
+    const [queueStack, setQueueStack] = useState<number[]>([]);
+    const [pathLength, setPathLength] = useState<number | null>(null);
 
     const canvasRef = useRef<HTMLDivElement>(null);
     const isRunningRef = useRef(false);
     const isPausedRef = useRef(false);
     const speedRef = useRef(SPEEDS[1].ms);
 
+    const currentAlgoInfo = algorithms.find((a) => a.id === selectedAlgorithm)!;
+
     useEffect(() => {
         speedRef.current = SPEEDS[speedIndex].ms;
     }, [speedIndex]);
 
-    // Generate sample graph
     useEffect(() => {
         generateSampleGraph();
     }, []);
@@ -124,7 +199,7 @@ export function GraphPage() {
         return adj;
     };
 
-    // BFS
+    // BFS with enhanced visualization
     const bfs = async () => {
         if (startNode === null) return;
         const adj = getAdjacencyList();
@@ -139,9 +214,13 @@ export function GraphPage() {
                 state: n.id === startNode ? 'start' : n.id === endNode ? 'end' : 'default',
             }))
         );
+        setEdges((prev) => prev.map((e) => ({ ...e, state: 'default' as const })));
 
         while (queue.length > 0) {
             if (!isRunningRef.current) return;
+
+            setQueueStack([...queue]);
+            setCurrentStep(3); // "current ← dequeue()"
 
             const current = queue.shift()!;
             if (visited.has(current)) continue;
@@ -149,6 +228,7 @@ export function GraphPage() {
             count++;
             setVisitedCount(count);
 
+            setCurrentStep(4); // checking target
             setNodes((prev) =>
                 prev.map((n) => ({
                     ...n,
@@ -165,17 +245,29 @@ export function GraphPage() {
             await sleep(speedRef.current);
 
             if (current === endNode) {
-                await highlightPath(parent, startNode, endNode);
+                const pathLen = await highlightPath(parent, startNode, endNode);
+                setPathLength(pathLen);
                 setMessage('Path found!');
+                setCurrentStep(-1);
                 return;
             }
 
+            setCurrentStep(5); // exploring neighbors
             for (const neighbor of adj.get(current) || []) {
                 if (!visited.has(neighbor.node)) {
                     queue.push(neighbor.node);
                     if (!parent.has(neighbor.node)) {
                         parent.set(neighbor.node, current);
                     }
+                    // Highlight exploring edge
+                    setEdges((prev) =>
+                        prev.map((e) =>
+                            (e.from === current && e.to === neighbor.node) ||
+                                (e.to === current && e.from === neighbor.node)
+                                ? { ...e, state: 'exploring' as const }
+                                : e
+                        )
+                    );
                 }
             }
 
@@ -187,14 +279,16 @@ export function GraphPage() {
             );
         }
         setMessage('No path found');
+        setCurrentStep(-1);
     };
 
-    // DFS
+    // DFS with enhanced visualization
     const dfs = async () => {
         if (startNode === null) return;
         const adj = getAdjacencyList();
         const visited = new Set<number>();
         const parent = new Map<number, number>();
+        const stack: number[] = [];
         let count = 0;
 
         setNodes((prev) =>
@@ -203,15 +297,19 @@ export function GraphPage() {
                 state: n.id === startNode ? 'start' : n.id === endNode ? 'end' : 'default',
             }))
         );
+        setEdges((prev) => prev.map((e) => ({ ...e, state: 'default' as const })));
 
         const dfsRecursive = async (node: number): Promise<boolean> => {
             if (!isRunningRef.current) return false;
             if (visited.has(node)) return false;
 
+            stack.push(node);
+            setQueueStack([...stack]);
             visited.add(node);
             count++;
             setVisitedCount(count);
 
+            setCurrentStep(1); // checking target
             setNodes((prev) =>
                 prev.map((n) => ({
                     ...n,
@@ -221,18 +319,33 @@ export function GraphPage() {
             await sleep(speedRef.current);
 
             if (node === endNode) {
-                await highlightPath(parent, startNode!, endNode);
+                const pathLen = await highlightPath(parent, startNode!, endNode);
+                setPathLength(pathLen);
                 setMessage('Path found!');
+                setCurrentStep(-1);
                 return true;
             }
 
+            setCurrentStep(3); // exploring neighbors
             for (const neighbor of adj.get(node) || []) {
                 if (!visited.has(neighbor.node)) {
                     parent.set(neighbor.node, node);
+                    // Highlight exploring edge
+                    setEdges((prev) =>
+                        prev.map((e) =>
+                            (e.from === node && e.to === neighbor.node) ||
+                                (e.to === node && e.from === neighbor.node)
+                                ? { ...e, state: 'exploring' as const }
+                                : e
+                        )
+                    );
                     if (await dfsRecursive(neighbor.node)) return true;
                 }
             }
 
+            setCurrentStep(6); // backtrack
+            stack.pop();
+            setQueueStack([...stack]);
             setNodes((prev) =>
                 prev.map((n) => ({
                     ...n,
@@ -244,9 +357,10 @@ export function GraphPage() {
 
         const found = await dfsRecursive(startNode);
         if (!found) setMessage('No path found');
+        setCurrentStep(-1);
     };
 
-    // Dijkstra
+    // Dijkstra with enhanced visualization
     const dijkstra = async () => {
         if (startNode === null || endNode === null) return;
         const adj = getAdjacencyList();
@@ -265,11 +379,12 @@ export function GraphPage() {
                 distance: n.id === startNode ? 0 : undefined,
             }))
         );
+        setEdges((prev) => prev.map((e) => ({ ...e, state: 'default' as const })));
 
         while (visited.size < nodes.length) {
             if (!isRunningRef.current) return;
 
-            // Get unvisited node with min distance
+            setCurrentStep(3); // extract_min
             let minNode: number | null = null;
             let minDist = Infinity;
             for (const [node, dist] of distances) {
@@ -281,10 +396,18 @@ export function GraphPage() {
 
             if (minNode === null || minDist === Infinity) break;
 
+            // Show priority queue state
+            const pqState = Array.from(distances.entries())
+                .filter(([n, d]) => !visited.has(n) && d !== Infinity)
+                .sort((a, b) => a[1] - b[1])
+                .map(([n]) => n);
+            setQueueStack(pqState);
+
             visited.add(minNode);
             count++;
             setVisitedCount(count);
 
+            setCurrentStep(4); // checking target
             setNodes((prev) =>
                 prev.map((n) => ({
                     ...n,
@@ -295,17 +418,29 @@ export function GraphPage() {
             await sleep(speedRef.current);
 
             if (minNode === endNode) {
-                await highlightPath(parent, startNode, endNode);
-                setMessage(`Shortest path distance: ${distances.get(endNode)}`);
+                const pathLen = await highlightPath(parent, startNode, endNode);
+                setPathLength(pathLen);
+                setMessage(`Shortest path: ${distances.get(endNode)}`);
+                setCurrentStep(-1);
                 return;
             }
 
+            setCurrentStep(5); // relaxing edges
             for (const neighbor of adj.get(minNode) || []) {
                 if (!visited.has(neighbor.node)) {
                     const newDist = minDist + neighbor.weight;
                     if (newDist < (distances.get(neighbor.node) || Infinity)) {
                         distances.set(neighbor.node, newDist);
                         parent.set(neighbor.node, minNode);
+                        // Highlight exploring edge
+                        setEdges((prev) =>
+                            prev.map((e) =>
+                                (e.from === minNode && e.to === neighbor.node) ||
+                                    (e.to === minNode && e.from === neighbor.node)
+                                    ? { ...e, state: 'exploring' as const }
+                                    : e
+                            )
+                        );
                     }
                 }
             }
@@ -318,13 +453,14 @@ export function GraphPage() {
             );
         }
         setMessage('No path found');
+        setCurrentStep(-1);
     };
 
     const highlightPath = async (
         parent: Map<number, number>,
         start: number,
         end: number
-    ) => {
+    ): Promise<number> => {
         const path: number[] = [];
         let current: number | undefined = end;
         while (current !== undefined && current !== start) {
@@ -332,6 +468,19 @@ export function GraphPage() {
             current = parent.get(current);
         }
         if (current === start) path.unshift(start);
+
+        // Highlight path edges
+        for (let i = 0; i < path.length - 1; i++) {
+            const from = path[i];
+            const to = path[i + 1];
+            setEdges((prev) =>
+                prev.map((e) =>
+                    (e.from === from && e.to === to) || (e.from === to && e.to === from)
+                        ? { ...e, state: 'path' as const }
+                        : e
+                )
+            );
+        }
 
         for (const nodeId of path) {
             setNodes((prev) =>
@@ -342,6 +491,7 @@ export function GraphPage() {
             );
             await sleep(speedRef.current / 2);
         }
+        return path.length;
     };
 
     const runAlgorithm = async () => {
@@ -356,6 +506,9 @@ export function GraphPage() {
         setIsPaused(false);
         setVisitedCount(0);
         setMessage('');
+        setCurrentStep(0);
+        setQueueStack([]);
+        setPathLength(null);
 
         switch (selectedAlgorithm) {
             case 'bfs':
@@ -371,6 +524,7 @@ export function GraphPage() {
 
         isRunningRef.current = false;
         setIsRunning(false);
+        setQueueStack([]);
     };
 
     const togglePause = () => {
@@ -394,8 +548,12 @@ export function GraphPage() {
                 distance: undefined,
             }))
         );
+        setEdges((prev) => prev.map((e) => ({ ...e, state: 'default' as const })));
         setVisitedCount(0);
         setMessage('');
+        setCurrentStep(-1);
+        setQueueStack([]);
+        setPathLength(null);
     };
 
     const clearGraph = () => {
@@ -406,6 +564,9 @@ export function GraphPage() {
         setSelectedNode(null);
         setVisitedCount(0);
         setMessage('');
+        setCurrentStep(-1);
+        setQueueStack([]);
+        setPathLength(null);
     };
 
     const handleCanvasClick = useCallback(
@@ -417,10 +578,7 @@ export function GraphPage() {
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
-            // Check if clicked on existing node
-            const clickedNode = nodes.find(
-                (n) => Math.hypot(n.x - x, n.y - y) < 25
-            );
+            const clickedNode = nodes.find((n) => Math.hypot(n.x - x, n.y - y) < 25);
 
             if (mode === 'add' && !clickedNode) {
                 const newNode: Node = {
@@ -434,7 +592,6 @@ export function GraphPage() {
                 if (selectedNode === null) {
                     setSelectedNode(clickedNode.id);
                 } else if (selectedNode !== clickedNode.id) {
-                    // Add edge if not exists
                     const exists = edges.some(
                         (e) =>
                             (e.from === selectedNode && e.to === clickedNode.id) ||
@@ -468,17 +625,28 @@ export function GraphPage() {
     const getNodeColor = (state: Node['state']) => {
         switch (state) {
             case 'start':
-                return 'bg-emerald-500 border-emerald-400';
+                return 'bg-emerald-500 border-emerald-400 shadow-emerald-500/50';
             case 'end':
-                return 'bg-red-500 border-red-400';
+                return 'bg-red-500 border-red-400 shadow-red-500/50';
             case 'visiting':
-                return 'bg-yellow-400 border-yellow-300';
+                return 'bg-yellow-400 border-yellow-300 shadow-yellow-500/50';
             case 'visited':
-                return 'bg-slate-400 dark:bg-slate-600 border-slate-300';
+                return 'bg-slate-400 dark:bg-slate-600 border-slate-300 shadow-slate-500/30';
             case 'path':
-                return 'bg-purple-500 border-purple-400';
+                return 'bg-purple-500 border-purple-400 shadow-purple-500/50';
             default:
-                return 'bg-primary-500 border-primary-400';
+                return 'bg-primary-500 border-primary-400 shadow-primary-500/30';
+        }
+    };
+
+    const getEdgeColor = (state?: Edge['state']) => {
+        switch (state) {
+            case 'exploring':
+                return 'stroke-yellow-400';
+            case 'path':
+                return 'stroke-purple-500';
+            default:
+                return 'stroke-slate-400 dark:stroke-slate-500';
         }
     };
 
@@ -503,9 +671,10 @@ export function GraphPage() {
                 <div className="grid lg:grid-cols-3 gap-6">
                     {/* Controls Panel */}
                     <div className="lg:col-span-1 space-y-4">
-                        {/* Algorithm Selection */}
+                        {/* Algorithm Selection with Info */}
                         <div className="algo-card">
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                                <BookOpen className="w-5 h-5" />
                                 Algorithm
                             </h3>
                             <div className="space-y-2">
@@ -517,29 +686,100 @@ export function GraphPage() {
                                         onClick={() => !isRunning && setSelectedAlgorithm(algo.id)}
                                         disabled={isRunning}
                                         className={`w-full flex flex-col items-start px-3 py-2 rounded-lg text-sm font-medium transition-all ${selectedAlgorithm === algo.id
-                                                ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/30'
-                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                            ? `bg-gradient-to-r ${algo.color} text-white shadow-lg`
+                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                                             } ${isRunning ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
                                         <span>{algo.name}</span>
-                                        <span className="text-xs opacity-75">{algo.description}</span>
+                                        <span className="text-xs opacity-75">{algo.description.split('.')[0]}</span>
                                     </motion.button>
                                 ))}
                             </div>
                         </div>
 
+                        {/* Algorithm Details */}
+                        <motion.div
+                            key={selectedAlgorithm}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="algo-card"
+                        >
+                            <div className={`h-1 w-full bg-gradient-to-r ${currentAlgoInfo.color} rounded-full mb-3`} />
+                            <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2">
+                                    <Clock className="w-4 h-4 text-slate-400" />
+                                    <span className="text-slate-600 dark:text-slate-400">Time:</span>
+                                    <span className="font-mono text-primary-600 dark:text-primary-400">
+                                        {currentAlgoInfo.timeComplexity}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Zap className="w-4 h-4 text-slate-400" />
+                                    <span className="text-slate-600 dark:text-slate-400">Space:</span>
+                                    <span className="font-mono text-primary-600 dark:text-primary-400">
+                                        {currentAlgoInfo.spaceComplexity}
+                                    </span>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                    <Target className="w-4 h-4 text-slate-400 mt-0.5" />
+                                    <span className="text-slate-600 dark:text-slate-400">{currentAlgoInfo.useCase}</span>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Pseudocode */}
+                        <div className="algo-card">
+                            <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Pseudocode</h3>
+                            <div className="font-mono text-xs space-y-0.5 bg-slate-800 dark:bg-slate-900 p-3 rounded-lg text-slate-300">
+                                {currentAlgoInfo.pseudocode.map((line, i) => (
+                                    <motion.div
+                                        key={i}
+                                        animate={{
+                                            backgroundColor: currentStep === i ? 'rgba(250, 204, 21, 0.3)' : 'transparent',
+                                        }}
+                                        className="px-1 rounded"
+                                    >
+                                        {line}
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Queue/Stack Visualization */}
+                        {isRunning && queueStack.length > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                className="algo-card"
+                            >
+                                <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">
+                                    {selectedAlgorithm === 'dfs' ? 'Stack' : selectedAlgorithm === 'dijkstra' ? 'Priority Queue' : 'Queue'}
+                                </h3>
+                                <div className="flex flex-wrap gap-1">
+                                    {queueStack.map((nodeId, i) => (
+                                        <motion.div
+                                            key={`${nodeId}-${i}`}
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            className="w-8 h-8 rounded-lg bg-primary-500 text-white flex items-center justify-center text-sm font-bold"
+                                        >
+                                            {nodeId}
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+
                         {/* Mode Selection */}
                         <div className="algo-card">
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">
-                                Edit Mode
-                            </h3>
+                            <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Edit Mode</h3>
                             <div className="grid grid-cols-3 gap-2">
                                 <button
                                     onClick={() => setMode('add')}
                                     disabled={isRunning}
                                     className={`flex flex-col items-center gap-1 p-2 rounded-lg text-xs transition-all ${mode === 'add'
-                                            ? 'bg-primary-500 text-white'
-                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                        ? 'bg-primary-500 text-white'
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                                         }`}
                                 >
                                     <Plus className="w-4 h-4" />
@@ -549,8 +789,8 @@ export function GraphPage() {
                                     onClick={() => setMode('connect')}
                                     disabled={isRunning}
                                     className={`flex flex-col items-center gap-1 p-2 rounded-lg text-xs transition-all ${mode === 'connect'
-                                            ? 'bg-primary-500 text-white'
-                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                        ? 'bg-primary-500 text-white'
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                                         }`}
                                 >
                                     <MousePointer className="w-4 h-4" />
@@ -560,11 +800,11 @@ export function GraphPage() {
                                     onClick={() => setMode('select')}
                                     disabled={isRunning}
                                     className={`flex flex-col items-center gap-1 p-2 rounded-lg text-xs transition-all ${mode === 'select'
-                                            ? 'bg-primary-500 text-white'
-                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                        ? 'bg-primary-500 text-white'
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                                         }`}
                                 >
-                                    <MousePointer className="w-4 h-4" />
+                                    <Target className="w-4 h-4" />
                                     Start/End
                                 </button>
                             </div>
@@ -572,23 +812,16 @@ export function GraphPage() {
 
                         {/* Controls */}
                         <div className="algo-card">
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">
-                                Controls
-                            </h3>
-
-                            {/* Speed */}
-                            <div className="mb-4">
-                                <label className="text-sm text-slate-600 dark:text-slate-400 mb-2 block">
-                                    Speed
-                                </label>
+                            <div className="mb-3">
+                                <label className="text-xs text-slate-600 dark:text-slate-400 mb-1 block">Speed</label>
                                 <div className="flex gap-2">
                                     {SPEEDS.map((speed, i) => (
                                         <button
                                             key={speed.label}
                                             onClick={() => setSpeedIndex(i)}
                                             className={`flex-1 px-2 py-1 text-xs rounded-lg transition-all ${speedIndex === i
-                                                    ? 'bg-primary-500 text-white'
-                                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                                ? 'bg-primary-500 text-white'
+                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                                                 }`}
                                         >
                                             {speed.label}
@@ -597,7 +830,6 @@ export function GraphPage() {
                                 </div>
                             </div>
 
-                            {/* Action Buttons */}
                             <div className="grid grid-cols-2 gap-2">
                                 {!isRunning ? (
                                     <motion.button
@@ -665,20 +897,20 @@ export function GraphPage() {
 
                         {/* Statistics */}
                         <div className="algo-card">
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">
-                                Statistics
-                            </h3>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="p-3 rounded-xl bg-primary-100 dark:bg-primary-900/30 text-center">
+                            <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Statistics</h3>
+                            <div className="grid grid-cols-3 gap-2">
+                                <div className="p-2 rounded-lg bg-primary-100 dark:bg-primary-900/30 text-center">
                                     <p className="text-xs text-primary-600 dark:text-primary-400">Nodes</p>
-                                    <p className="text-xl font-bold text-primary-700 dark:text-primary-300">
-                                        {nodes.length}
-                                    </p>
+                                    <p className="text-lg font-bold text-primary-700 dark:text-primary-300">{nodes.length}</p>
                                 </div>
-                                <div className="p-3 rounded-xl bg-yellow-100 dark:bg-yellow-900/30 text-center">
+                                <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 text-center">
                                     <p className="text-xs text-yellow-600 dark:text-yellow-400">Visited</p>
-                                    <p className="text-xl font-bold text-yellow-700 dark:text-yellow-300">
-                                        {visitedCount}
+                                    <p className="text-lg font-bold text-yellow-700 dark:text-yellow-300">{visitedCount}</p>
+                                </div>
+                                <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-center">
+                                    <p className="text-xs text-purple-600 dark:text-purple-400">Path</p>
+                                    <p className="text-lg font-bold text-purple-700 dark:text-purple-300">
+                                        {pathLength ?? '-'}
                                     </p>
                                 </div>
                             </div>
@@ -687,17 +919,17 @@ export function GraphPage() {
                         {/* Legend */}
                         <div className="algo-card">
                             <div className="flex items-start gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center flex-shrink-0">
-                                    <Info className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                                <div className="w-6 h-6 rounded-lg bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center flex-shrink-0">
+                                    <Info className="w-3 h-3 text-primary-600 dark:text-primary-400" />
                                 </div>
-                                <div className="text-xs space-y-1">
+                                <div className="text-xs grid grid-cols-2 gap-x-4 gap-y-1">
                                     <div className="flex items-center gap-2">
                                         <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                                        <span className="text-slate-600 dark:text-slate-400">Start Node</span>
+                                        <span className="text-slate-600 dark:text-slate-400">Start</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <div className="w-3 h-3 rounded-full bg-red-500" />
-                                        <span className="text-slate-600 dark:text-slate-400">End Node</span>
+                                        <span className="text-slate-600 dark:text-slate-400">End</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <div className="w-3 h-3 rounded-full bg-yellow-400" />
@@ -715,18 +947,16 @@ export function GraphPage() {
                     {/* Visualization Panel */}
                     <div className="lg:col-span-2 visualizer-container">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                                Graph Canvas
-                            </h3>
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Graph Canvas</h3>
                             <AnimatePresence>
                                 {message && (
                                     <motion.span
                                         initial={{ opacity: 0, x: 20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: 20 }}
-                                        className={`px-3 py-1 rounded-full text-sm font-medium ${message.includes('found')
-                                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
-                                                : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300'
+                                        className={`px-3 py-1 rounded-full text-sm font-medium ${message.includes('found') || message.includes('Shortest')
+                                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
+                                            : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300'
                                             }`}
                                     >
                                         {message}
@@ -751,13 +981,16 @@ export function GraphPage() {
                                     const midY = (fromNode.y + toNode.y) / 2;
                                     return (
                                         <g key={i}>
-                                            <line
+                                            <motion.line
                                                 x1={fromNode.x}
                                                 y1={fromNode.y}
                                                 x2={toNode.x}
                                                 y2={toNode.y}
-                                                className="stroke-slate-400 dark:stroke-slate-500"
-                                                strokeWidth="2"
+                                                className={getEdgeColor(edge.state)}
+                                                strokeWidth={edge.state === 'path' ? 4 : 2}
+                                                animate={{
+                                                    strokeWidth: edge.state === 'path' ? 4 : edge.state === 'exploring' ? 3 : 2,
+                                                }}
                                             />
                                             {selectedAlgorithm === 'dijkstra' && (
                                                 <text
@@ -786,12 +1019,17 @@ export function GraphPage() {
                                         }}
                                         exit={{ scale: 0, opacity: 0 }}
                                         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                                        className={`absolute w-10 h-10 -ml-5 -mt-5 rounded-full flex items-center justify-center font-bold text-white border-2 ${getNodeColor(
+                                        className={`absolute w-10 h-10 -ml-5 -mt-5 rounded-full flex items-center justify-center font-bold text-white border-2 shadow-lg ${getNodeColor(
                                             node.state
                                         )} ${selectedNode === node.id ? 'ring-2 ring-yellow-400' : ''}`}
                                         style={{ left: node.x, top: node.y }}
                                     >
-                                        {node.id}
+                                        <span className="text-sm">{node.id}</span>
+                                        {node.distance !== undefined && selectedAlgorithm === 'dijkstra' && (
+                                            <span className="absolute -bottom-5 text-[10px] text-slate-600 dark:text-slate-300 font-mono">
+                                                d={node.distance === Infinity ? '∞' : node.distance}
+                                            </span>
+                                        )}
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
