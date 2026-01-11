@@ -77,11 +77,11 @@ export function Header() {
                             )}
                         </motion.button>
 
-                        {/* Mobile Menu Button */}
+                        {/* Menu Button - visible on all screens */}
                         <motion.button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             whileTap={{ scale: 0.95 }}
-                            className="control-btn md:hidden"
+                            className="control-btn"
                             aria-label="Toggle menu"
                         >
                             {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -90,25 +90,25 @@ export function Header() {
                 </div>
             </div>
 
-            {/* Mobile Menu */}
+            {/* Menu Dropdown - visible on all screens */}
             {isMenuOpen && (
                 <motion.nav
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    className="md:hidden glass border-t border-slate-200 dark:border-slate-700"
+                    className="glass border-t border-slate-200 dark:border-slate-700"
                 >
-                    <div className="px-4 py-4 space-y-2">
-                        <MobileNavLink to="/" onClick={() => setIsMenuOpen(false)}>Home</MobileNavLink>
-                        <MobileNavLink to="/stack" onClick={() => setIsMenuOpen(false)}>Stack</MobileNavLink>
-                        <MobileNavLink to="/queue" onClick={() => setIsMenuOpen(false)}>Queue</MobileNavLink>
-                        <MobileNavLink to="/linked-list" onClick={() => setIsMenuOpen(false)}>Linked List</MobileNavLink>
-                        <MobileNavLink to="/hash-table" onClick={() => setIsMenuOpen(false)}>Hash Table</MobileNavLink>
-                        <MobileNavLink to="/sorting" onClick={() => setIsMenuOpen(false)}>Sorting</MobileNavLink>
-                        <MobileNavLink to="/searching" onClick={() => setIsMenuOpen(false)}>Searching</MobileNavLink>
-                        <MobileNavLink to="/graph" onClick={() => setIsMenuOpen(false)}>Graph</MobileNavLink>
-                        <MobileNavLink to="/analysis" onClick={() => setIsMenuOpen(false)}>Analysis</MobileNavLink>
-                        <div className="border-t border-slate-200 dark:border-slate-700 pt-2 mt-2">
+                    <div className="max-w-7xl mx-auto px-4 py-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                            <MobileNavLink to="/" onClick={() => setIsMenuOpen(false)}>🏠 Home</MobileNavLink>
+                            <MobileNavLink to="/stack" onClick={() => setIsMenuOpen(false)}>📚 Stack</MobileNavLink>
+                            <MobileNavLink to="/queue" onClick={() => setIsMenuOpen(false)}>🚶 Queue</MobileNavLink>
+                            <MobileNavLink to="/linked-list" onClick={() => setIsMenuOpen(false)}>🔗 Linked List</MobileNavLink>
+                            <MobileNavLink to="/hash-table" onClick={() => setIsMenuOpen(false)}>#️⃣ Hash Table</MobileNavLink>
+                            <MobileNavLink to="/sorting" onClick={() => setIsMenuOpen(false)}>📊 Sorting</MobileNavLink>
+                            <MobileNavLink to="/searching" onClick={() => setIsMenuOpen(false)}>🔍 Searching</MobileNavLink>
+                            <MobileNavLink to="/graph" onClick={() => setIsMenuOpen(false)}>🕸️ Graph</MobileNavLink>
+                            <MobileNavLink to="/analysis" onClick={() => setIsMenuOpen(false)}>📈 Analysis</MobileNavLink>
                             <MobileNavLink to="/feedback" onClick={() => setIsMenuOpen(false)}>📝 Feedback</MobileNavLink>
                         </div>
                     </div>
