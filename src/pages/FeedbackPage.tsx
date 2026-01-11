@@ -131,7 +131,7 @@ export function FeedbackPage() {
                 experience_rating: formData.experience,
                 improvements: formData.improvements || 'None provided',
                 issues: formData.issues || 'None reported',
-                to_email: 'ar443203@gmail.com',
+                to_email: 'wolfankit512@gmail.com',
             };
 
             // Simulate API call
@@ -273,10 +273,10 @@ export function FeedbackPage() {
                                                 : '0 0 0 0px transparent',
                                     }}
                                     className={`input-field transition-all duration-200 ${errors.name && touched.name
-                                            ? 'border-red-500 dark:border-red-500'
-                                            : focusedField === 'name'
-                                                ? 'border-primary-500 dark:border-primary-400'
-                                                : ''
+                                        ? 'border-red-500 dark:border-red-500'
+                                        : focusedField === 'name'
+                                            ? 'border-primary-500 dark:border-primary-400'
+                                            : ''
                                         }`}
                                     placeholder="Enter your name"
                                 />
@@ -338,10 +338,10 @@ export function FeedbackPage() {
                                                 : '0 0 0 0px transparent',
                                     }}
                                     className={`input-field transition-all duration-200 ${errors.email && touched.email
-                                            ? 'border-red-500 dark:border-red-500'
-                                            : focusedField === 'email'
-                                                ? 'border-primary-500 dark:border-primary-400'
-                                                : ''
+                                        ? 'border-red-500 dark:border-red-500'
+                                        : focusedField === 'email'
+                                            ? 'border-primary-500 dark:border-primary-400'
+                                            : ''
                                         }`}
                                     placeholder="your.email@example.com"
                                 />
@@ -407,8 +407,8 @@ export function FeedbackPage() {
                                             >
                                                 <Star
                                                     className={`w-10 h-10 transition-all duration-200 ${rating <= (hoverRating || formData.experience)
-                                                            ? 'fill-yellow-400 text-yellow-400 drop-shadow-lg'
-                                                            : 'text-slate-300 dark:text-slate-600'
+                                                        ? 'fill-yellow-400 text-yellow-400 drop-shadow-lg'
+                                                        : 'text-slate-300 dark:text-slate-600'
                                                         }`}
                                                 />
                                             </motion.div>
@@ -528,10 +528,10 @@ export function FeedbackPage() {
                                 whileHover={!isSubmitting ? { scale: 1.02, y: -2 } : {}}
                                 whileTap={!isSubmitting ? { scale: 0.98 } : {}}
                                 className={`w-full py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-all duration-300 ${isFormValid && !isSubmitting
-                                        ? 'bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40'
-                                        : isSubmitting
-                                            ? 'bg-primary-400 text-white cursor-wait'
-                                            : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                                    ? 'bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40'
+                                    : isSubmitting
+                                        ? 'bg-primary-400 text-white cursor-wait'
+                                        : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
                                     }`}
                             >
                                 {isSubmitting ? (
@@ -560,10 +560,10 @@ export function FeedbackPage() {
                     <p className="text-sm text-slate-500 dark:text-slate-400">
                         You can also reach us directly at{' '}
                         <a
-                            href="mailto:ar443203@gmail.com"
+                            href="mailto:wolfankit512@gmail.com"
                             className="text-primary-600 dark:text-primary-400 hover:underline font-medium"
                         >
-                            ar443203@gmail.com
+                            wolfankit512@gmail.com
                         </a>
                     </p>
                 </motion.div>
