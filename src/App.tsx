@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout';
-import { HomePage, StackPage, QueuePage } from './pages';
+import { HomePage, StackPage, QueuePage, LinkedListPage } from './pages';
 
 function App() {
   return (
@@ -10,7 +10,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/stack" element={<StackPage />} />
           <Route path="/queue" element={<QueuePage />} />
-          <Route path="/linked-list" element={<ComingSoon title="Linked List" />} />
+          <Route path="/linked-list" element={<LinkedListPage />} />
           <Route path="/hash-table" element={<ComingSoon title="Hash Table" />} />
           <Route path="/sorting" element={<ComingSoon title="Sorting" />} />
           <Route path="/searching" element={<ComingSoon title="Searching" />} />
