@@ -146,7 +146,7 @@ export function HomePage() {
                             <ArrowRight className="w-4 h-4" />
                         </Link>
                         <a
-                            href="https://github.com"
+                            href="https://github.com/AnkitRaj-12/AlgoVision"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn btn-secondary"

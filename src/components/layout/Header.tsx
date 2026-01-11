@@ -52,7 +52,7 @@ export function Header() {
                     {/* Actions */}
                     <div className="flex items-center gap-2">
                         <motion.a
-                            href="https://github.com"
+                            href="https://github.com/AnkitRaj-12/AlgoVision"
                             target="_blank"
                             rel="noopener noreferrer"
                             whileHover={{ scale: 1.05 }}
