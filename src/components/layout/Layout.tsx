@@ -1,26 +1,24 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from './Header';
 import { FlaskConical } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
+// Smooth spring bounce from top - fast and professional
 const pageVariants = {
     initial: {
         opacity: 0,
-        y: 20,
+        y: -30,
+        scale: 0.98,
     },
     animate: {
         opacity: 1,
         y: 0,
+        scale: 1,
         transition: {
-            duration: 0.4,
-            ease: [0.25, 0.46, 0.45, 0.94],
-        },
-    },
-    exit: {
-        opacity: 0,
-        y: -10,
-        transition: {
-            duration: 0.2,
+            type: 'spring',
+            stiffness: 300,
+            damping: 30,
+            mass: 0.8,
         },
     },
 };
@@ -29,20 +27,17 @@ export function Layout() {
     const location = useLocation();
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 overflow-x-hidden">
             <Header />
             <main className="pt-16">
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={location.pathname}
-                        variants={pageVariants}
-                        initial="initial"
-                        animate="animate"
-                        exit="exit"
-                    >
-                        <Outlet />
-                    </motion.div>
-                </AnimatePresence>
+                <motion.div
+                    key={location.pathname}
+                    variants={pageVariants}
+                    initial="initial"
+                    animate="animate"
+                >
+                    <Outlet />
+                </motion.div>
             </main>
             <footer className="py-8 text-center border-t border-slate-200 dark:border-slate-800">
                 <p className="text-sm text-slate-500 dark:text-slate-400 inline-flex items-center justify-center gap-1">
