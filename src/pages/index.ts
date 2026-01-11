@@ -4,3 +4,4 @@ export { QueuePage } from './QueuePage';
 export { LinkedListPage } from './LinkedListPage';
 export { HashTablePage } from './HashTablePage';
 export { SortingPage } from './SortingPage';
+export { SearchingPage } from './SearchingPage';
