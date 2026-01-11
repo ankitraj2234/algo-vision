@@ -1,0 +1,340 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  /* Custom color palette */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+
+  /* Algorithm state colors */
+  --color-comparing: #f97316;
+  --color-swapping: #ef4444;
+  --color-sorted: #22c55e;
+  --color-searching: #eab308;
+  --color-found: #22c55e;
+  --color-notfound: #ef4444;
+
+  /* Animations */
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-bounce-slow: bounce 2s infinite;
+  --animate-fade-in: fadeIn 0.3s ease-in-out;
+  --animate-slide-up: slideUp 0.3s ease-out;
+  --animate-slide-down: slideDown 0.3s ease-out;
+  --animate-slide-left: slideLeft 0.3s ease-out;
+  --animate-slide-right: slideRight 0.3s ease-out;
+  --animate-scale-in: scaleIn 0.2s ease-out;
+
+  /* Font families */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  0% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideLeft {
+  0% {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideRight {
+  0% {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Base Styles */
+* {
+  @apply border-slate-200 dark:border-slate-700;
+}
+
+body {
+  @apply bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100;
+  @apply antialiased font-sans;
+}
+
+/* Algorithm Card Styles */
+.algo-card {
+  @apply relative overflow-hidden rounded-2xl p-6;
+  @apply bg-gradient-to-br from-white to-slate-50;
+  @apply dark:from-slate-800 dark:to-slate-900;
+  @apply border border-slate-200 dark:border-slate-700;
+  @apply shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50;
+  @apply transition-all duration-300 ease-out;
+}
+
+.algo-card:hover {
+  @apply shadow-xl shadow-primary-500/20;
+  @apply -translate-y-1 border-primary-400;
+}
+
+.algo-card::before {
+  content: '';
+  @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+  @apply bg-gradient-to-br from-primary-500/10 to-transparent;
+}
+
+.algo-card:hover::before {
+  @apply opacity-100;
+}
+
+/* Visualizer Container */
+.visualizer-container {
+  @apply relative min-h-[400px] rounded-xl;
+  @apply bg-gradient-to-b from-slate-50 to-slate-100;
+  @apply dark:from-slate-800 dark:to-slate-900;
+  @apply border border-slate-200 dark:border-slate-700;
+  @apply p-6 overflow-hidden;
+}
+
+/* Stack Element */
+.stack-element {
+  @apply flex items-center justify-center;
+  @apply w-24 h-12 rounded-lg font-mono font-semibold;
+  @apply bg-gradient-to-r from-primary-500 to-primary-600;
+  @apply text-white shadow-lg;
+  @apply border-2 border-primary-400;
+}
+
+/* Queue Element */
+.queue-element {
+  @apply flex items-center justify-center;
+  @apply w-16 h-16 rounded-lg font-mono font-semibold;
+  @apply bg-gradient-to-br from-emerald-500 to-emerald-600;
+  @apply text-white shadow-lg;
+  @apply border-2 border-emerald-400;
+}
+
+/* Linked List Node */
+.ll-node {
+  @apply flex items-center justify-center;
+  @apply w-14 h-14 rounded-full font-mono font-semibold;
+  @apply bg-gradient-to-br from-violet-500 to-violet-600;
+  @apply text-white shadow-lg;
+  @apply border-[3px] border-violet-400;
+}
+
+/* Sorting Bar */
+.sort-bar {
+  @apply w-4 rounded-t-md transition-all duration-150;
+  @apply bg-gradient-to-t from-primary-600 to-primary-400;
+}
+
+.sort-bar.comparing {
+  @apply from-orange-600 to-orange-400;
+}
+
+.sort-bar.swapping {
+  @apply from-red-600 to-red-400;
+}
+
+.sort-bar.sorted {
+  @apply from-green-600 to-green-400;
+}
+
+/* Control Buttons */
+.control-btn {
+  @apply flex items-center justify-center;
+  @apply w-10 h-10 rounded-full;
+  @apply bg-slate-100 dark:bg-slate-800;
+  @apply text-slate-600 dark:text-slate-300;
+  @apply transition-all duration-200;
+}
+
+.control-btn:hover {
+  @apply bg-primary-100 text-primary-600;
+  @apply dark:bg-primary-900/50 dark:text-primary-400;
+}
+
+.control-btn:active {
+  @apply scale-95;
+}
+
+.control-btn.primary {
+  @apply bg-primary-500 text-white;
+}
+
+.control-btn.primary:hover {
+  @apply bg-primary-600;
+}
+
+/* Input Fields */
+.input-field {
+  @apply w-full px-4 py-2.5 rounded-xl;
+  @apply bg-white dark:bg-slate-800;
+  @apply border border-slate-300 dark:border-slate-600;
+  @apply text-slate-900 dark:text-slate-100;
+  @apply placeholder:text-slate-400 dark:placeholder:text-slate-500;
+  @apply transition-all duration-200;
+}
+
+.input-field:focus {
+  @apply outline-none ring-2 ring-primary-500 border-transparent;
+}
+
+/* Action Buttons */
+.btn {
+  @apply inline-flex items-center justify-center gap-2;
+  @apply px-5 py-2.5 rounded-xl font-medium;
+  @apply transition-all duration-200;
+}
+
+.btn:active {
+  @apply scale-95;
+}
+
+.btn-primary {
+  @apply bg-gradient-to-r from-primary-500 to-primary-600;
+  @apply text-white shadow-lg shadow-primary-500/30;
+}
+
+.btn-primary:hover {
+  @apply from-primary-600 to-primary-700;
+  @apply shadow-xl shadow-primary-500/40;
+}
+
+.btn-secondary {
+  @apply bg-slate-100 dark:bg-slate-800;
+  @apply text-slate-700 dark:text-slate-300;
+}
+
+.btn-secondary:hover {
+  @apply bg-slate-200 dark:bg-slate-700;
+}
+
+.btn-danger {
+  @apply bg-gradient-to-r from-red-500 to-red-600;
+  @apply text-white shadow-lg shadow-red-500/30;
+}
+
+.btn-danger:hover {
+  @apply from-red-600 to-red-700;
+}
+
+/* Code Block */
+.code-block {
+  @apply rounded-xl overflow-hidden;
+  @apply bg-slate-900 text-slate-100;
+  @apply border border-slate-700;
+}
+
+.code-block pre {
+  @apply p-4 overflow-x-auto;
+  @apply font-mono text-sm leading-relaxed;
+}
+
+/* Tooltip */
+.tooltip {
+  @apply absolute z-50 px-3 py-1.5 rounded-lg;
+  @apply bg-slate-900 dark:bg-slate-100;
+  @apply text-white dark:text-slate-900;
+  @apply text-sm font-medium;
+  @apply shadow-lg;
+}
+
+/* Glass Effect */
+.glass {
+  @apply bg-white/80 dark:bg-slate-900/80;
+  @apply backdrop-blur-xl;
+  @apply border border-white/20 dark:border-slate-700/50;
+}
+
+/* Text Gradient */
+.text-gradient {
+  @apply bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-primary-500 to-primary-700;
+  @apply dark:from-primary-400 dark:to-primary-600;
+}
+
+/* Scrollbar */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  @apply bg-slate-400 rounded-full;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
