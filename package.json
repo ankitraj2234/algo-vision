@@ -12,8 +12,11 @@
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
     "framer-motion": "^12.25.0",
     "lucide-react": "^0.562.0",
+    "nodemailer": "^7.0.12",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.12.0",

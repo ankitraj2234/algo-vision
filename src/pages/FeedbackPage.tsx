@@ -96,13 +96,28 @@ export function FeedbackPage() {
         setSubmitStatus('idle');
 
         try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-
-            console.log('Feedback submitted:', {
-                ...formData,
-                to_email: 'wolfankit512@gmail.com',
+            // Call backend API to send email
+            const response = await fetch('http://localhost:3001/api/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: formData.name,
+                    email: formData.email,
+                    experience: formData.experience,
+                    improvements: formData.improvements,
+                    issues: formData.issues,
+                }),
             });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Failed to send feedback');
+            }
+
+            console.log('Feedback sent successfully:', data);
 
             setSubmitStatus('success');
             setFormData({ name: '', email: '', experience: 0, improvements: '', issues: '' });
@@ -215,8 +230,8 @@ export function FeedbackPage() {
                                 onChange={handleInputChange}
                                 onBlur={() => handleBlur('name')}
                                 className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border-2 transition-all duration-200 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none ${errors.name && touched.name
-                                        ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200'
-                                        : 'border-slate-200 dark:border-slate-600 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-900'
+                                    ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200'
+                                    : 'border-slate-200 dark:border-slate-600 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-900'
                                     }`}
                                 placeholder="Enter your name"
                             />
@@ -250,8 +265,8 @@ export function FeedbackPage() {
                                 onChange={handleInputChange}
                                 onBlur={() => handleBlur('email')}
                                 className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border-2 transition-all duration-200 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none ${errors.email && touched.email
-                                        ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200'
-                                        : 'border-slate-200 dark:border-slate-600 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-900'
+                                    ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200'
+                                    : 'border-slate-200 dark:border-slate-600 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-900'
                                     }`}
                                 placeholder="your.email@example.com"
                             />
@@ -286,8 +301,8 @@ export function FeedbackPage() {
                                     >
                                         <Star
                                             className={`w-10 h-10 transition-colors duration-150 ${rating <= (hoverRating || formData.experience)
-                                                    ? 'fill-yellow-400 text-yellow-400'
-                                                    : 'text-slate-300 dark:text-slate-600'
+                                                ? 'fill-yellow-400 text-yellow-400'
+                                                : 'text-slate-300 dark:text-slate-600'
                                                 }`}
                                         />
                                     </button>
@@ -295,10 +310,10 @@ export function FeedbackPage() {
                             </div>
                             {(hoverRating || formData.experience) > 0 && (
                                 <span className={`text-lg font-semibold ${(hoverRating || formData.experience) <= 1 ? 'text-red-500' :
-                                        (hoverRating || formData.experience) === 2 ? 'text-orange-500' :
-                                            (hoverRating || formData.experience) === 3 ? 'text-yellow-500' :
-                                                (hoverRating || formData.experience) === 4 ? 'text-lime-500' :
-                                                    'text-emerald-500'
+                                    (hoverRating || formData.experience) === 2 ? 'text-orange-500' :
+                                        (hoverRating || formData.experience) === 3 ? 'text-yellow-500' :
+                                            (hoverRating || formData.experience) === 4 ? 'text-lime-500' :
+                                                'text-emerald-500'
                                     }`}>
                                     {ratingLabels[hoverRating || formData.experience]}
                                 </span>
@@ -365,10 +380,10 @@ export function FeedbackPage() {
                         type="submit"
                         disabled={isSubmitting}
                         className={`w-full py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-all duration-200 ${isFormValid && !isSubmitting
-                                ? 'bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white shadow-lg hover:shadow-xl active:scale-[0.98]'
-                                : isSubmitting
-                                    ? 'bg-primary-400 text-white cursor-wait'
-                                    : 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
+                            ? 'bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white shadow-lg hover:shadow-xl active:scale-[0.98]'
+                            : isSubmitting
+                                ? 'bg-primary-400 text-white cursor-wait'
+                                : 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
                             }`}
                     >
                         {isSubmitting ? (
