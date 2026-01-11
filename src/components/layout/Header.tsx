@@ -108,6 +108,9 @@ export function Header() {
                         <MobileNavLink to="/searching" onClick={() => setIsMenuOpen(false)}>Searching</MobileNavLink>
                         <MobileNavLink to="/graph" onClick={() => setIsMenuOpen(false)}>Graph</MobileNavLink>
                         <MobileNavLink to="/analysis" onClick={() => setIsMenuOpen(false)}>Analysis</MobileNavLink>
+                        <div className="border-t border-slate-200 dark:border-slate-700 pt-2 mt-2">
+                            <MobileNavLink to="/feedback" onClick={() => setIsMenuOpen(false)}>📝 Feedback</MobileNavLink>
+                        </div>
                     </div>
                 </motion.nav>
             )}

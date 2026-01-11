@@ -1,6 +1,17 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout';
-import { HomePage, StackPage, QueuePage, LinkedListPage, HashTablePage, SortingPage, SearchingPage } from './pages';
+import {
+  HomePage,
+  StackPage,
+  QueuePage,
+  LinkedListPage,
+  HashTablePage,
+  SortingPage,
+  SearchingPage,
+  GraphPage,
+  AnalysisPage,
+  FeedbackPage,
+} from './pages';
 
 function App() {
   return (
@@ -14,25 +25,12 @@ function App() {
           <Route path="/hash-table" element={<HashTablePage />} />
           <Route path="/sorting" element={<SortingPage />} />
           <Route path="/searching" element={<SearchingPage />} />
-          <Route path="/graph" element={<ComingSoon title="Graph" />} />
-          <Route path="/analysis" element={<ComingSoon title="Analysis" />} />
+          <Route path="/graph" element={<GraphPage />} />
+          <Route path="/analysis" element={<AnalysisPage />} />
+          <Route path="/feedback" element={<FeedbackPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
-  );
-}
-
-// Temporary placeholder for pages under development
-function ComingSoon({ title }: { title: string }) {
-  return (
-    <div className="min-h-[80vh] flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gradient mb-4">{title}</h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          This visualizer is coming soon!
-        </p>
-      </div>
-    </div>
   );
 }
 

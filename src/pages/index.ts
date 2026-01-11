@@ -5,3 +5,6 @@ export { LinkedListPage } from './LinkedListPage';
 export { HashTablePage } from './HashTablePage';
 export { SortingPage } from './SortingPage';
 export { SearchingPage } from './SearchingPage';
+export { GraphPage } from './GraphPage';
+export { AnalysisPage } from './AnalysisPage';
+export { FeedbackPage } from './FeedbackPage';
