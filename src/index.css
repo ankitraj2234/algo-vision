@@ -2,6 +2,9 @@
 
 @import "tailwindcss";
 
+/* Enable dark mode via class selector */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* Custom color palette */
   --color-primary-50: #eff6ff;
