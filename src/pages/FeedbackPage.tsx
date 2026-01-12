@@ -14,6 +14,10 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+// Web3Forms - Free form submission service (no backend required)
+// Get your access key from: https://web3forms.com (takes 1 minute, free)
+const WEB3FORMS_KEY = import.meta.env.VITE_WEB3FORMS_KEY || 'YOUR_ACCESS_KEY_HERE';
+
 interface FormData {
     name: string;
     email: string;
@@ -50,7 +54,6 @@ export function FeedbackPage() {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
 
-        // Clear error when user starts typing
         if (errors[name as keyof FormErrors]) {
             setErrors((prev) => ({ ...prev, [name]: undefined }));
         }
@@ -59,7 +62,6 @@ export function FeedbackPage() {
     const handleBlur = (field: string) => {
         setTouched((prev) => ({ ...prev, [field]: true }));
 
-        // Validate on blur
         if (field === 'name' && !formData.name.trim()) {
             setErrors((prev) => ({ ...prev, name: 'Name is required' }));
         } else if (field === 'email') {
@@ -80,7 +82,6 @@ export function FeedbackPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validate all fields
         const newErrors: FormErrors = {};
         if (!formData.name.trim()) newErrors.name = 'Name is required';
         if (!formData.email.trim()) newErrors.email = 'Email is required';
@@ -96,18 +97,21 @@ export function FeedbackPage() {
         setSubmitStatus('idle');
 
         try {
-            // Call backend API to send email
-            const response = await fetch('http://localhost:3001/api/feedback', {
+            // Web3Forms submission - no backend needed!
+            const response = await fetch('https://api.web3forms.com/submit', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
+                    access_key: WEB3FORMS_KEY,
+                    subject: `AlgoVision Feedback from ${formData.name}`,
+                    from_name: 'AlgoVision Feedback',
                     name: formData.name,
                     email: formData.email,
-                    experience: formData.experience,
-                    improvements: formData.improvements,
-                    issues: formData.issues,
+                    experience_rating: `${'⭐'.repeat(formData.experience)} (${formData.experience}/5)`,
+                    suggestions: formData.improvements || 'None provided',
+                    issues_faced: formData.issues || 'None reported',
                 }),
             });
 
@@ -117,8 +121,7 @@ export function FeedbackPage() {
                 throw new Error(data.message || 'Failed to send feedback');
             }
 
-            console.log('Feedback sent successfully:', data);
-
+            console.log('Feedback sent successfully');
             setSubmitStatus('success');
             setFormData({ name: '', email: '', experience: 0, improvements: '', issues: '' });
             setTouched({});
