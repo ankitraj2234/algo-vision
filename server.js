@@ -10,8 +10,8 @@ app.use(express.json());
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: process.env.EMAIL_USER || 'tourismguide419@gmail.com',
-        pass: process.env.EMAIL_PASS || 'mrpl gcuv dgjp tpbm'
+        user: process.env.EMAIL_USER || '............',
+        pass: process.env.EMAIL_PASS || '..........'
     }
 });
 
