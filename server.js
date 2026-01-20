@@ -72,8 +72,8 @@ app.post('/api/feedback', async (req, res) => {
     const safeIssues = sanitizeInput(issues);
 
     const mailOptions = {
-        from: process.env.EMAIL_USER || 'tourismguide419@gmail.com',
-        to: process.env.RECIPIENT_EMAIL || 'wolfankit512@gmail.com',
+        from: process.env.EMAIL_USER || '............',
+        to: process.env.RECIPIENT_EMAIL || '..........',
         subject: `AlgoVision Feedback from ${safeName}`,
         html: `
       <h2>New Feedback Received</h2>
